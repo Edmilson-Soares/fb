@@ -1,0 +1,35 @@
+<% include ../partials/header %>
+
+<% if (login) { %>
+    <p>Hello <span class="text-muted"><%= user.firstName %></span></p>
+<% } else { %>
+    <p>Hello <span class="text-muted">guest</span>. Would you like to <a style="text-decoration: none;" href="/user/register">register</a> or <a style="text-decoration: none;" href="/user/login">login</a>?</p>
+<% } %>
+
+<% if (friendsOnline) { %>
+    <h1>Friends Online</h1>
+    <% friendsOnline.forEach(friend => { %>
+        <a href="/user/<%= friend._id %>/profile"><%= friend.firstName + " " + friend.lastName %></a>
+    <% }) %>
+<% } %>
+
+<% if (posts) { %>
+    <ul class="list-unstyled">
+        <% posts.reverse().forEach(post => { %>
+        <li class="media" style="border: 1px solid #09A9FF">
+            <div class="media-body">
+            <h5 class="mt-0 mb-1"><a style="text-decoration: none" href="/user/<%= post.creator._id %>/profile"><%= post.creator.firstName + " " + post.creator.lastName %></a></h5>
+            <a style="text-decoration: none" href="/post/<%=post._id%>">Created: <%= post.time.getDate() + "." + post.time.getMonth() + "." + post.time.getFullYear() + " - " + post.time.getHours() + ":" + post.time.getMinutes() %></a>
+            <br />
+            <% if (post.content.length > 30) { %>
+                <%= post.content.substring(0, 30) %>
+            <% } else { %>
+                <%= post.content %>
+            <% } %>
+            </div>
+        </li>
+        <% }) %>
+    </ul>
+<% } %>
+
+<% include ../partials/footer %>

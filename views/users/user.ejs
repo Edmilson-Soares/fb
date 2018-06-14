@@ -1,0 +1,27 @@
+<% include ../partials/header %>
+
+<h1><%= userData.firstName + " " + userData.lastName %></h1>
+
+<% if (userData._id.equals(user._id)) { %>
+    <% if (userData.friendRequests.length > 0) { %>
+        <h1>Friend Requests</h1>
+        <% userData.friendRequests.forEach(request => { %>
+            <div style="border: 1px solid black;">
+                <p>Request from <%= request.firstName + " " + request.lastName %></p>
+                <a href="/user/<%=request._id%>/accept">Accept</a>
+                <a href="/user/<%=request._id%>/decline">Decline</a>
+            </div>
+        <% }) %>
+    <% } %>
+<% } %>
+
+<% if (userData.friends.length > 0) { %>
+    <h1><%= userData.firstName %>'s friend list</h1>
+    <ul>
+        <% userData.friends.forEach(friend => { %>
+            <p><a href="/user/<%=friend._id%>/profile"><%= friend.firstName + " " + friend.lastName %></a></p>
+        <% }); %>
+    </ul>
+<% } %>
+
+<% include ../partials/footer %>

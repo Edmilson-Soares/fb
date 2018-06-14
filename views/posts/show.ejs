@@ -1,0 +1,17 @@
+<% include ../partials/header %>
+
+<p>Created by <%= post.creator.firstName %></p>
+<p><%= post.content %></p>
+
+<% post.comments.forEach(comment => { %>
+    <p><strong><%= comment.creator.firstName + " " + comment.creator.lastName %></strong> - <%= comment.content %></p>
+<% }) %>
+<form action="/post/<%=post._id%>/comments/new" method="POST">
+    <div class="form-group row">
+        <label for="CommentTextArea" class="col-form-label col-sm-2" >New Comment</label>
+        <textarea name="content" class="form-control" id="CommentTextArea" rows="1" style="width: 300px;" ></textarea>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+
+<% include ../partials/footer %>
