@@ -1,6 +1,8 @@
 <% include ../partials/header %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 
 <% if (login) { %>
+    <% var firstName = user.firstName %>
     <p>Hello <span class="text-muted"><%= user.firstName %></span></p>
 <% } else { %>
     <p>Hello <span class="text-muted">guest</span>. Would you like to <a style="text-decoration: none;" href="/user/register">register</a> or <a style="text-decoration: none;" href="/user/login">login</a>?</p>
@@ -31,5 +33,37 @@
         <% }) %>
     </ul>
 <% } %>
+
+<div class="chat">
+    <div id="output">
+        
+    </div>
+    <div class="input">
+        <input type="text" id="message" placholder="Message">
+        <button id="send">Send</button>
+    </div>
+</div>
+
+<script>
+    const socket = io.connect("http://localhost:3000");
+
+    const name = "<%= firstName %>";
+
+    const message = document.getElementById("message");
+    const button = document.getElementById("send");
+    const output = document.getElementById("output");
+
+    button.addEventListener("click", () => {
+        socket.emit("chat", {
+            message: message.value,
+            name: name
+        })
+    })
+
+    socket.on("chat", data => {
+        output.innerHTML += `<p><strong>${data.name}</strong> - ${data.message}</p>`
+        message.value = "";
+    })
+</script>
 
 <% include ../partials/footer %>

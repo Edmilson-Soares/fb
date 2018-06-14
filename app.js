@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const expressSession = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
+const socket = require("socket.io");
 const flash = require("connect-flash");
 const Post = require("./models/Post");
 const User = require("./models/User");
@@ -15,11 +16,13 @@ const app = express();
 // Set view engine to ejs so that template files will be ejs files
 app.set("view engine", "ejs");
 // Set up express session
-app.use(expressSession({
-    secret: "secretKey",
-    resave: false,
-    saveUninitialized: false
-}));
+app.use(
+    expressSession({
+        secret: "secretKey",
+        resave: false,
+        saveUninitialized: false
+    })
+);
 
 // Set up passport for authentication
 app.use(passport.initialize());
@@ -29,7 +32,7 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 // Set up body parser
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // Set up flash (alerts)
@@ -48,8 +51,19 @@ app.use((req, res, next) => {
 });
 
 // Routes & Middleware
-app.use('/', routes);
+app.use("/", routes);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log("App is running on port " + port);
+});
+
+// Socket.io setup
+const io = socket(server);
+
+io.on("connection", socket => {
+    console.log(socket.id);
+
+    socket.on("chat", data => {
+        io.sockets.emit("chat", data);
+    });
 });
