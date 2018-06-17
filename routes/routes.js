@@ -38,22 +38,26 @@ router.get("/", (req, res) => {
                     );
                     res.render("posts/index"); // posts will be undefined/null
                 } else {
-                    // TODO: see who is online inside the current user's friend list
-                    let friendsOnline = [];
-                    // if user has friends
-                    if (req.user.friends.length > 0) {
-                        // check which one is online
-                        let sessions = req.sessionStore.sessions;
-                        for (let i in sessions) {
-                            let sess = JSON.parse(sessions[i]);
-                            let useremail = sess.passport.user;
-                            for (var j = 0; j < user.friends.length; j++) {
-                                if (user.friends[j].username === useremail) {
-                                    friendsOnline.push(user.friends[j]);
-                                }
-                            }
-                        }
-                    }
+                    // req.sessionStore.sessions has all sessions open with the users email so you can see who is logged in.
+                    // it shows the username even if the user's browser is not open and the session is just open so it's pretty much useless
+                    // if i do fix it, i need to add the friendsOnline array in the res.render function so that the ejs template will get the variable
+
+                    // let friendsOnline = [];
+                    // // if user has friends
+                    // if (req.user.friends.length > 0) {
+                    //     // check which one is online
+                    //     let sessions = req.sessionStore.sessions;
+                    //     for (let i in sessions) {
+                    //         let sess = JSON.parse(sessions[i]);
+                    //         let useremail = sess.passport.user;
+                    //         for (var j = 0; j < user.friends.length; j++) {
+                    //             if (user.friends[j].username === useremail) {
+                    //                 friendsOnline.push(user.friends[j]);
+                    //             }
+                    //         }
+                    //     }
+                    // }
+
                     let posts = [];
                     for (var i = 0; i < user.friends.length; i++) {
                         for (var j = 0; j < user.friends[i].posts.length; j++) {
@@ -64,17 +68,9 @@ router.get("/", (req, res) => {
                         posts.push(user.posts[i]);
                     }
                     if (posts) {
-                        if (friendsOnline.length > 0) {
-                            res.render("posts/index", {
-                                posts: posts,
-                                friendsOnline: friendsOnline
-                            });
-                        } else {
-                            res.render("posts/index", {
-                                posts: posts,
-                                friendsOnline: null
-                            });
-                        }
+                        res.render("posts/index", {
+                            posts: posts
+                        });
                     } else {
                         res.render("posts/index", { posts: null });
                     }
@@ -84,6 +80,50 @@ router.get("/", (req, res) => {
         // user is not logged in
         res.redirect("/user/login");
     }
+});
+
+// user likes a post
+router.get("/post/:id/like", isLoggedIn, (req, res) => {
+    User.findById(req.user._id, (err, user) => {
+        if (err) {
+            console.log(err);
+            req.flash(
+                "There has been an error trying to like this post, are you logged in?"
+            );
+            rse.redirect("back");
+        } else {
+            Post.findById(req.params.id, (err, post) => {
+                if (err) {
+                    console.log(err);
+                    req.flash(
+                        "There has been an error trying to like this post, are you sure you are in the correct URL?"
+                    );
+                    res.redirect("back");
+                } else {
+                    // check if user already likes this post
+                    for (let i = 0; i < user.liked.length; i++) {
+                        if (user.liked[i].equals(post._id)) {
+                            // req.flash with error saying he already liked this post
+                            req.flash("error", "You already liked this post");
+                            return res.redirect("back");
+                        }
+                    }
+                    // increase the likes on the post and add it to user's array. req.flash with success
+                    post.likes = post.likes + 1;
+                    post.save();
+                    user.liked.push(post._id);
+                    user.save();
+                    req.flash(
+                        "success",
+                        `You successfully liked ${
+                            post.creator.firstName
+                        }'s post`
+                    );
+                    res.redirect("back");
+                }
+            });
+        }
+    });
 });
 
 // Users
@@ -178,7 +218,8 @@ router.post("/post/new", isLoggedIn, (req, res) => {
             {
                 content: req.body.content,
                 time: new Date(),
-                creator: req.user
+                creator: req.user,
+                likes: 0
             },
             (err, post) => {
                 if (err) {

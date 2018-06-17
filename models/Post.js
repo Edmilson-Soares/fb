@@ -3,10 +3,11 @@ const mongoose = require("mongoose");
 let PostSchema = new mongoose.Schema({
     content: String,
     time: Date,
+    likes: Number,
     creator: {
         _id: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "User"
         },
         firstName: String,
         lastName: String
@@ -17,7 +18,7 @@ let PostSchema = new mongoose.Schema({
             ref: "Comment"
         }
     ]
-})
+});
 
 let Post = mongoose.model("Post", PostSchema);
-module.exports = Post
+module.exports = Post;

@@ -12,6 +12,13 @@ let UserSchema = new mongoose.Schema({
             ref: "Post"
         }
     ],
+    // liked posts
+    liked: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post"
+        }
+    ],
     friends: [
         {
             type: mongoose.Schema.Types.ObjectId,
