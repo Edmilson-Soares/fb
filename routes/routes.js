@@ -19,59 +19,67 @@ router.get("/", (req, res) => {
     // get all posts
     if (req.isAuthenticated()) {
         // Post.find({}, (err, posts) => {
-        User.findById(req.user._id).populate({ // get friends posts
-            path: "friends",
-            populate: {
-                path: "posts",
-                model: "Post"
-            },
-        })
-        .populate("posts") // get current users posts
-        .exec((err, user) => {
-            if (err) {
-                console.log(err);
-                req.flash(
-                    "error",
-                    "There has been an error finding all posts."
-                );
-                res.render("posts/index"); // posts will be undefined/null
-            } else {
-                // TODO: see who is online inside the current user's friend list
-                let friendsOnline = [];
-                // if user has friends
-                if (req.user.friends.length > 0) {
-                    // check which one is online
-                    let sessions = req.sessionStore.sessions
-                    for (let i in sessions) {
-                        let sess = JSON.parse(sessions[i]);
-                        let useremail = sess.passport.user;
-                        for(var j = 0; j < user.friends.length; j++) {
-                            if (user.friends[j].username === useremail) {
-                                friendsOnline.push(user.friends[j]);
+        User.findById(req.user._id)
+            .populate({
+                // get friends posts
+                path: "friends",
+                populate: {
+                    path: "posts",
+                    model: "Post"
+                }
+            })
+            .populate("posts") // get current users posts
+            .exec((err, user) => {
+                if (err) {
+                    console.log(err);
+                    req.flash(
+                        "error",
+                        "There has been an error finding all posts."
+                    );
+                    res.render("posts/index"); // posts will be undefined/null
+                } else {
+                    // TODO: see who is online inside the current user's friend list
+                    let friendsOnline = [];
+                    // if user has friends
+                    if (req.user.friends.length > 0) {
+                        // check which one is online
+                        let sessions = req.sessionStore.sessions;
+                        for (let i in sessions) {
+                            let sess = JSON.parse(sessions[i]);
+                            let useremail = sess.passport.user;
+                            for (var j = 0; j < user.friends.length; j++) {
+                                if (user.friends[j].username === useremail) {
+                                    friendsOnline.push(user.friends[j]);
+                                }
                             }
                         }
                     }
-                }
-                let posts = [];
-                for(var i = 0; i < user.friends.length; i++) {
-                    for(var j = 0; j  < user.friends[i].posts.length; j++) {
-                        posts.push(user.friends[i].posts[j])
+                    let posts = [];
+                    for (var i = 0; i < user.friends.length; i++) {
+                        for (var j = 0; j < user.friends[i].posts.length; j++) {
+                            posts.push(user.friends[i].posts[j]);
+                        }
                     }
-                }
-                for(var i = 0; i < user.posts.length; i++) {
-                    posts.push(user.posts[i]);
-                }
-                if(posts) {
-                    if (friendsOnline.length > 0) {
-                        res.render("posts/index", { posts: posts, friendsOnline: friendsOnline});
+                    for (var i = 0; i < user.posts.length; i++) {
+                        posts.push(user.posts[i]);
+                    }
+                    if (posts) {
+                        if (friendsOnline.length > 0) {
+                            res.render("posts/index", {
+                                posts: posts,
+                                friendsOnline: friendsOnline
+                            });
+                        } else {
+                            res.render("posts/index", {
+                                posts: posts,
+                                friendsOnline: null
+                            });
+                        }
                     } else {
-                        res.render("posts/index", { posts: posts, friendsOnline: null});
+                        res.render("posts/index", { posts: null });
                     }
-                } else {
-                    res.render("posts/index", { posts: null })
                 }
-            }
-        });
+            });
     } else {
         // user is not logged in
         res.redirect("/user/login");
@@ -129,6 +137,7 @@ router.post(
         failureRedirect: "/user/login"
     }),
     (req, res) => {
+        console.log("successss");
         req.flash("success", "Success! You are logged in!");
     }
 );
@@ -176,7 +185,7 @@ router.post("/post/new", isLoggedIn, (req, res) => {
                     console.log(err);
                 } else {
                     req.user.posts.push(post._id);
-                    req.user.save()
+                    req.user.save();
                     res.redirect("/");
                 }
             }
@@ -187,16 +196,19 @@ router.post("/post/new", isLoggedIn, (req, res) => {
 // User Profile
 router.get("/user/:id/profile", isLoggedIn, (req, res) => {
     // getting the user data (including friends and friend requests)
-    User.findById(req.params.id).populate("friends").populate("friendRequests").exec((err, user) => {
-        if (err) {
-            console.log(err);
-            req.flash("error", "There has been an error.");
-            res.redirect("back");
-        } else {
-            // render the page without the friends array.
-            res.render("users/user", { userData: user }); // im calling it userData because i have a local template variable called user and i don't want to over-write it
-        }
-    });
+    User.findById(req.params.id)
+        .populate("friends")
+        .populate("friendRequests")
+        .exec((err, user) => {
+            if (err) {
+                console.log(err);
+                req.flash("error", "There has been an error.");
+                res.redirect("back");
+            } else {
+                // render the page without the friends array.
+                res.render("users/user", { userData: user }); // im calling it userData because i have a local template variable called user and i don't want to over-write it
+            }
+        });
 });
 
 router.get("/user/:id/add", isLoggedIn, (req, res) => {
@@ -347,16 +359,18 @@ router.get("/user/:id/decline", isLoggedIn, (req, res) => {
 });
 
 router.get("/post/:id", isLoggedIn, (req, res) => {
-    Post.findById(req.params.id).populate("comments").exec((err, post) => {
-        if (err) {
-            console.log(err);
-            req.flash("error", "There has been an error finding this post");
-            res.redirect("back");
-        } else {
-            res.render("posts/show", { post: post });
-        }
-    })
-})
+    Post.findById(req.params.id)
+        .populate("comments")
+        .exec((err, post) => {
+            if (err) {
+                console.log(err);
+                req.flash("error", "There has been an error finding this post");
+                res.redirect("back");
+            } else {
+                res.render("posts/show", { post: post });
+            }
+        });
+});
 
 router.get("/post/:id/comments/new", isLoggedIn, (req, res) => {
     Post.findById(req.params.id, (err, post) => {
@@ -380,10 +394,13 @@ router.post("/post/:id/comments/new", isLoggedIn, (req, res) => {
             req.flash("error", "There has been an error posting your comment");
             res.redirect("back");
         } else {
-            Comment.create({content: req.body.content}, (err, comment) => {
+            Comment.create({ content: req.body.content }, (err, comment) => {
                 if (err) {
                     console.log(err);
-                    req.flash("error", "Something went wrong with posting your comment")
+                    req.flash(
+                        "error",
+                        "Something went wrong with posting your comment"
+                    );
                     res.redirect("back");
                 } else {
                     comment.creator._id = req.user._id;
@@ -395,9 +412,9 @@ router.post("/post/:id/comments/new", isLoggedIn, (req, res) => {
                     req.flash("success", "Successfully posted your comment");
                     res.redirect("/post/" + post._id);
                 }
-            })
+            });
         }
-    })
+    });
 });
 
 module.exports = router;
