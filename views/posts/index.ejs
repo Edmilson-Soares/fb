@@ -1,7 +1,7 @@
 <% include ../partials/header %>
 <link rel="stylesheet" href="posts/index.css">
+<link rel="stylesheet" href="posts/index_2.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
-
 <% if (login) { %>
     <% var firstName = user.firstName %>
     <p>Hello <span class="text-muted"><%= user.firstName %></span></p>
@@ -9,41 +9,48 @@
     <p>Hello <span class="text-muted">guest</span>. Would you like to <a style="text-decoration: none;" href="/user/register">register</a> or <a style="text-decoration: none;" href="/user/login">login</a>?</p>
 <% } %>
 
-<% if (friendsOnline) { %>
-    <h1>Friends Online</h1>
-    <% friendsOnline.forEach(friend => { %>
-        <a href="/user/<%= friend._id %>/profile"><%= friend.firstName + " " + friend.lastName %></a>
-    <% }) %>
-<% } %>
-
 <% if (posts) { %>
-    <ul class="list-unstyled">
-        <% posts.reverse().forEach(post => { %>
-        <li class="media" style="border: 1px solid #09A9FF">
-            <div class="media-body">
-            <h5 class="mt-0 mb-1"><a style="text-decoration: none" href="/user/<%= post.creator._id %>/profile"><%= post.creator.firstName + " " + post.creator.lastName %></a></h5>
-            <a style="text-decoration: none" href="/post/<%=post._id%>">Created: <%= post.time.getDate() + "." + post.time.getMonth() + "." + post.time.getFullYear() + " - " + post.time.getHours() + ":" + post.time.getMinutes() %></a>
-            <br />
+<main>
+    <section class="news-feed">
+    <% posts.reverse().forEach(post => { %>
+        <article class="post">
+            <div class="post__header">
+                <img class="avatar" src="http://via.placeholder.com/50x50">
+                <div class="post__info">
+                <a href="/user/<%= post.creator._id %>/profile"><%= post.creator.firstName + " " + post.creator.lastName %></a>
+                <span><a href="/post/<%= post._id %>">Created: <%= post.time.getDate() + "." + post.time.getMonth() + "." + post.time.getFullYear() + " - " + post.time.getHours() + ":" + post.time.getMinutes() %></a></span>
+                </div>        
+            </div>
+            <!-- <div class="post__content">
+                <img src="http://via.placeholder.com/490x400">
+            </div> -->
+            <div class="post__engage">
+                <a href="/post/<%= post._id %>/like">Like <%= post.likes %></a>
+            </div>
             <% if (post.content.length > 30) { %>
                 <%= post.content.substring(0, 30) %>
             <% } else { %>
                 <%= post.content %>
             <% } %>
-            </div>
-        </li>
-        <% }) %>
-    </ul>
-<% } %>
+        </article>
+    <% }) %>
+    </section>
 
-<div id="chat" class="chat">
-    <h4>Global Chat</h4>
-    <div id="users"></div>
-    <div id="output"></div>
-    <div class="input">
-        <input type="text" id="message" placholder="Message">
-        <button id="send">Send</button>
-    </div>
-</div>
+
+    <!-- NEED TO FIX: chat going down without an overflow property -->
+    <aside class="services">
+        <div id="chat" class="chat">
+            <h4>Global Chat</h4>
+            <div id="users"></div>
+            <div id="output"></div>
+            <div class="input">
+                <input type="text" id="message" placholder="Message">
+                <button id="send">Send</button>
+            </div>
+        </div>
+    </aside>
+</main>
+<% } %>
     
 <script>
     // const socket = io.connect("http://localhost:3000");
@@ -76,9 +83,9 @@
     })
 
     socket.on("updateUserList", data => {
-        let string = '';
+        let string = '<strong>Users Connected</strong>:';
         for(var i = 0; i < data.length; i++) {
-            string += `<p>${data[i].name}</p>`
+            string += `<p>${data[i].name}</p>`;
         }
         users.innerHTML = string;
     })
