@@ -1,0 +1,131 @@
+<% include ../partials/header %>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+
+<style>
+    .chat {
+        position: relative;
+        width: 80vw;
+        height: 80vh;
+        margin: 15px auto;
+    }
+    .users {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 25%;
+    }
+    .chat-window {
+        position: absolute;
+        top: 0;
+        left: 25%;
+        width: 75%;
+        height: 100%;
+        overflow: auto;
+    }
+    .user-heading {
+        text-align: center;
+        border: 1px solid #bbb;
+        border-radius: 5px;
+    }
+    .message {
+        border: 1px solid #bbb;
+        border-radius: 5px;
+        position: absolute;
+        top: 92%;
+        width: 85%;
+    }
+    .message input {
+        height: 35px;
+        width: 100%;
+    }
+    .send {
+        width: 15%;
+        height: 35px;
+        position: absolute;
+        top: 92%;
+        left: 85%
+    }
+    .send button {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+</div> <!-- close container div -->
+
+<% if (login) { %>
+    <% var firstName = user.firstName %>
+<% } %>
+
+<div class="chat">
+    <div class="users">
+        <% if(userData.friends.length > 0) { %>
+            <ul id="users" class="list-group"></ul>
+        <% } %>
+    </div>
+    <div id="chat-window" class="chat-window">
+        <h3 class="user-heading">Global Chat</h3>
+        <div id="output" class="output">
+
+        </div>
+        <form id="send-message">
+            <div class="message">
+                <input type="text" id="message" placholder="Message">
+            </div>
+            <div id="send" class="send">
+                <button class="btn btn-primary">Send</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div> <!-- open container div so it gets closed in the footer file -->
+
+<script>
+    // const socket = io.connect("http://localhost:3000");
+    const socket = io("/chat");
+    const name = "<%= firstName %>";
+
+    const message = document.getElementById("message");
+    const button = document.getElementById("send");
+    const output = document.getElementById("output");
+    const users = document.getElementById("users");
+    const chat = document.getElementById("chat-window");
+    const form = document.getElementById("send-message");
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        if(message.value) {
+            socket.emit("chat", {
+                message: message.value,
+                name: name
+            })
+            message.value = "";
+        }
+    })
+
+    socket.on("chat", data => {
+        output.innerHTML += `<p><strong>${data.name}</strong> - ${data.message}</p>`
+        chat.scrollTop = chat.scrollHeight;
+    })
+
+    socket.on("newUser", data => {
+        socket.emit("newUser", { name: name, socketID: data.socketID })
+    })
+
+    socket.on("updateUserList", data => {
+        let string = ``;
+        for(var i = 0; i < data.length; i++) {
+            string += `<li class="list-group-item">${data[i].name}</li>`;
+        }
+        users.innerHTML = string;
+    })
+
+    socket.on("userDisconnected", data => {
+        console.log("disconnected user")
+    })
+</script>
+
+<% include ../partials/footer %>

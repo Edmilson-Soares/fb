@@ -40,63 +40,7 @@
     <% }) %>
     </section>
 
-
-    <!-- NEED TO FIX: chat going down without an overflow property -->
-    <aside class="services">
-        <div id="chat" class="chat">
-            <h4>Global Chat</h4>
-            <div id="users"></div>
-            <div id="output"></div>
-            <div class="input">
-                <input type="text" id="message" placholder="Message">
-                <button id="send">Send</button>
-            </div>
-        </div>
-    </aside>
 </main>
 <% } %>
-    
-<script>
-    // const socket = io.connect("http://localhost:3000");
-    const socket = io();
-    const name = "<%= firstName %>";
-
-    const message = document.getElementById("message");
-    const button = document.getElementById("send");
-    const output = document.getElementById("output");
-    const users = document.getElementById("users");
-    const chat = document.getElementById("chat");
-
-    button.addEventListener("click", () => {
-        if(message.value) {
-            socket.emit("chat", {
-                message: message.value,
-                name: name
-            })
-            message.value = "";
-        }
-    })
-
-    socket.on("chat", data => {
-        output.innerHTML += `<p><strong>${data.name}</strong> - ${data.message}</p>`
-        chat.scrollTop = chat.scrollHeight;
-    })
-
-    socket.on("newUser", data => {
-        socket.emit("newUser", { name: name, socketID: data.socketID })
-    })
-
-    socket.on("updateUserList", data => {
-        let string = '<strong>Users Connected</strong>:';
-        for(var i = 0; i < data.length; i++) {
-            string += `<p>${data[i].name}</p>`;
-        }
-        users.innerHTML = string;
-    })
-
-    socket.on("userDisconnected", data => {
-        console.log("disconnected user")
-    })
-</script>
 
 <% include ../partials/footer %>

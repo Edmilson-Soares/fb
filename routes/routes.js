@@ -456,5 +456,21 @@ router.post("/post/:id/comments/new", isLoggedIn, (req, res) => {
 });
 
 // CHAT
+router.get("/chat", isLoggedIn, (req, res) => {
+    User.findById(req.user._id)
+        .populate("friends")
+        .exec((err, user) => {
+            if (err) {
+                console.log(err);
+                req.flash(
+                    "error",
+                    "There has been an error trying to access the chat"
+                );
+                res.redirect("/");
+            } else {
+                res.render("users/chat", { userData: user });
+            }
+        });
+});
 
 module.exports = router;

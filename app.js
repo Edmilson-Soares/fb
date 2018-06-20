@@ -61,18 +61,20 @@ const server = app.listen(port, () => {
 // Socket.io setup
 const io = socket(server);
 
-io.on("connection", socket => {
+const room = io.of("/chat");
+room.on("connection", socket => {
+    console.log(socket);
     console.log("new user ", socket.id);
     // onlineChatUsers.push({
     //     _id: req.user._id,
 
     // });
-    io.sockets.emit("newUser", { socketID: socket.id });
+    room.emit("newUser", { socketID: socket.id });
 
     socket.on("newUser", data => {
         if (!onlineChatUsers.find(o => o.name === data.name)) {
             onlineChatUsers.push(data);
-            io.sockets.emit("updateUserList", onlineChatUsers);
+            room.emit("updateUserList", onlineChatUsers);
             console.log(onlineChatUsers);
         }
     });
@@ -81,12 +83,12 @@ io.on("connection", socket => {
         let dcUser = onlineChatUsers.find(o => o.socketID === socket.id);
         let index = onlineChatUsers.indexOf(dcUser);
         onlineChatUsers.splice(index, 1);
-        io.sockets.emit("updateUserList", onlineChatUsers);
+        room.emit("updateUserList", onlineChatUsers);
         console.log(`user ${socket.id} disconnected`);
     });
 
     socket.on("chat", data => {
         console.log(data);
-        io.sockets.emit("chat", data);
+        room.emit("chat", data);
     });
 });
