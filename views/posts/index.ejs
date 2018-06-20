@@ -25,7 +25,11 @@
                 <img src="http://via.placeholder.com/490x400">
             </div> -->
             <div class="post__engage">
-                <a href="/post/<%= post._id %>/like">Like <%= post.likes %></a>
+                <% if(user.liked.find(o => o.equals(post._id))) { %>
+                    <p><%= post.likes %> Likes</p>
+                <% } else { %>
+                    <a href="/post/<%= post._id %>/like">Like <%= post.likes %></a>
+                <% } %>
             </div>
             <% if (post.content.length > 30) { %>
                 <%= post.content.substring(0, 30) %>

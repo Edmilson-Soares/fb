@@ -176,10 +176,7 @@ router.post(
         successRedirect: "/",
         failureRedirect: "/user/login"
     }),
-    (req, res) => {
-        console.log("successss");
-        req.flash("success", "Success! You are logged in!");
-    }
+    (req, res) => {}
 );
 
 // All users GET route
@@ -457,5 +454,7 @@ router.post("/post/:id/comments/new", isLoggedIn, (req, res) => {
         }
     });
 });
+
+// CHAT
 
 module.exports = router;
