@@ -1,6 +1,11 @@
 <% include ../partials/header %>
 
 <p>Created by <%= post.creator.firstName %></p>
+<% if (post.image) { %>
+    <div>
+        <img src="<%= post.image %>" style="max-height: 500px;">
+    </div>
+<% } %>
 <p><%= post.content %></p>
 
 <% post.comments.forEach(comment => { %>

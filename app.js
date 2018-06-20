@@ -11,7 +11,8 @@ const User = require("./models/User");
 const port = process.env.port || 3000;
 const onlineChatUsers = [];
 
-const routes = require("./routes/routes");
+const postRoutes = require("./routes/posts");
+const userRoutes = require("./routes/users");
 const app = express();
 
 // Set view engine to ejs so that template files will be ejs files
@@ -52,7 +53,8 @@ app.use((req, res, next) => {
 });
 
 // Routes & Middleware
-app.use("/", routes);
+app.use("/", userRoutes);
+app.use("/", postRoutes);
 
 const server = app.listen(port, () => {
     console.log("App is running on port " + port);

@@ -1,7 +1,5 @@
 const express = require("express");
-const Post = require("../models/Post");
 const User = require("../models/User");
-const Comment = require("../models/Comment");
 const passport = require("passport");
 const router = express.Router();
 
@@ -14,121 +12,6 @@ const isLoggedIn = (req, res, next) => {
     res.redirect("/user/login");
 };
 
-// Index page
-router.get("/", (req, res) => {
-    // get all posts
-    if (req.isAuthenticated()) {
-        // Post.find({}, (err, posts) => {
-        User.findById(req.user._id)
-            .populate({
-                // get friends posts
-                path: "friends",
-                populate: {
-                    path: "posts",
-                    model: "Post"
-                }
-            })
-            .populate("posts") // get current users posts
-            .exec((err, user) => {
-                if (err) {
-                    console.log(err);
-                    req.flash(
-                        "error",
-                        "There has been an error finding all posts."
-                    );
-                    res.render("posts/index"); // posts will be undefined/null
-                } else {
-                    // req.sessionStore.sessions has all sessions open with the users email so you can see who is logged in.
-                    // it shows the username even if the user's browser is not open and the session is just open so it's pretty much useless
-                    // if i do fix it, i need to add the friendsOnline array in the res.render function so that the ejs template will get the variable
-
-                    // let friendsOnline = [];
-                    // // if user has friends
-                    // if (req.user.friends.length > 0) {
-                    //     // check which one is online
-                    //     let sessions = req.sessionStore.sessions;
-                    //     for (let i in sessions) {
-                    //         let sess = JSON.parse(sessions[i]);
-                    //         let useremail = sess.passport.user;
-                    //         for (var j = 0; j < user.friends.length; j++) {
-                    //             if (user.friends[j].username === useremail) {
-                    //                 friendsOnline.push(user.friends[j]);
-                    //             }
-                    //         }
-                    //     }
-                    // }
-
-                    let posts = [];
-                    for (var i = 0; i < user.friends.length; i++) {
-                        for (var j = 0; j < user.friends[i].posts.length; j++) {
-                            posts.push(user.friends[i].posts[j]);
-                        }
-                    }
-                    for (var i = 0; i < user.posts.length; i++) {
-                        posts.push(user.posts[i]);
-                    }
-                    if (posts) {
-                        res.render("posts/index", {
-                            posts: posts
-                        });
-                    } else {
-                        res.render("posts/index", { posts: null });
-                    }
-                }
-            });
-    } else {
-        // user is not logged in
-        res.redirect("/user/login");
-    }
-});
-
-// user likes a post
-router.get("/post/:id/like", isLoggedIn, (req, res) => {
-    User.findById(req.user._id, (err, user) => {
-        if (err) {
-            console.log(err);
-            req.flash(
-                "There has been an error trying to like this post, are you logged in?"
-            );
-            rse.redirect("back");
-        } else {
-            Post.findById(req.params.id, (err, post) => {
-                if (err) {
-                    console.log(err);
-                    req.flash(
-                        "There has been an error trying to like this post, are you sure you are in the correct URL?"
-                    );
-                    res.redirect("back");
-                } else {
-                    // check if user already likes this post
-                    for (let i = 0; i < user.liked.length; i++) {
-                        if (user.liked[i].equals(post._id)) {
-                            // req.flash with error saying he already liked this post
-                            req.flash("error", "You already liked this post");
-                            return res.redirect("back");
-                        }
-                    }
-                    // increase the likes on the post and add it to user's array. req.flash with success
-                    post.likes = post.likes + 1;
-                    post.save();
-                    user.liked.push(post._id);
-                    user.save();
-                    req.flash(
-                        "success",
-                        `You successfully liked ${
-                            post.creator.firstName
-                        }'s post`
-                    );
-                    res.redirect("back");
-                }
-            });
-        }
-    });
-});
-
-// Users
-
-// New user GET route - show register form
 router.get("/user/register", (req, res) => {
     res.render("users/register");
 });
@@ -202,34 +85,6 @@ router.get("/user/logout", (req, res) => {
 });
 
 // Posts
-
-// New Post GET Route
-router.get("/post/new", isLoggedIn, (req, res) => {
-    res.render("posts/new");
-});
-
-// New Post POST Route
-router.post("/post/new", isLoggedIn, (req, res) => {
-    if (req.body.content) {
-        Post.create(
-            {
-                content: req.body.content,
-                time: new Date(),
-                creator: req.user,
-                likes: 0
-            },
-            (err, post) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    req.user.posts.push(post._id);
-                    req.user.save();
-                    res.redirect("/");
-                }
-            }
-        );
-    }
-});
 
 // User Profile
 router.get("/user/:id/profile", isLoggedIn, (req, res) => {
@@ -390,65 +245,6 @@ router.get("/user/:id/decline", isLoggedIn, (req, res) => {
                         req.flash("success", "You declined");
                         res.redirect("back");
                     }
-                }
-            });
-        }
-    });
-});
-
-router.get("/post/:id", isLoggedIn, (req, res) => {
-    Post.findById(req.params.id)
-        .populate("comments")
-        .exec((err, post) => {
-            if (err) {
-                console.log(err);
-                req.flash("error", "There has been an error finding this post");
-                res.redirect("back");
-            } else {
-                res.render("posts/show", { post: post });
-            }
-        });
-});
-
-router.get("/post/:id/comments/new", isLoggedIn, (req, res) => {
-    Post.findById(req.params.id, (err, post) => {
-        if (err) {
-            console.log(err);
-            req.flash(
-                "error",
-                "There has been an error trying to comment on this post"
-            );
-            res.redirect("back");
-        } else {
-            res.render("comments/new", { post: post });
-        }
-    });
-});
-
-router.post("/post/:id/comments/new", isLoggedIn, (req, res) => {
-    Post.findById(req.params.id, (err, post) => {
-        if (err) {
-            console.log(err);
-            req.flash("error", "There has been an error posting your comment");
-            res.redirect("back");
-        } else {
-            Comment.create({ content: req.body.content }, (err, comment) => {
-                if (err) {
-                    console.log(err);
-                    req.flash(
-                        "error",
-                        "Something went wrong with posting your comment"
-                    );
-                    res.redirect("back");
-                } else {
-                    comment.creator._id = req.user._id;
-                    comment.creator.firstName = req.user.firstName;
-                    comment.creator.lastName = req.user.lastName;
-                    comment.save();
-                    post.comments.push(comment);
-                    post.save();
-                    req.flash("success", "Successfully posted your comment");
-                    res.redirect("/post/" + post._id);
                 }
             });
         }

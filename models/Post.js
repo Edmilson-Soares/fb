@@ -4,6 +4,7 @@ let PostSchema = new mongoose.Schema({
     content: String,
     time: Date,
     likes: Number,
+    image: String,
     creator: {
         _id: {
             type: mongoose.Schema.Types.ObjectId,

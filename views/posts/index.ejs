@@ -21,9 +21,11 @@
                 <span><a href="/post/<%= post._id %>">Created: <%= post.time.getDate() + "." + post.time.getMonth() + "." + post.time.getFullYear() + " - " + post.time.getHours() + ":" + post.time.getMinutes() %></a></span>
                 </div>        
             </div>
-            <!-- <div class="post__content">
-                <img src="http://via.placeholder.com/490x400">
-            </div> -->
+            <% if (post.image) { %>
+                <div style="max-width: 200px;">
+                    <img src="<%= post.image %>" style="max-height: 400px;">
+                </div>
+            <% } %>
             <div class="post__engage">
                 <% if(user.liked.find(o => o.equals(post._id))) { %>
                     <p><%= post.likes %> Likes</p>
