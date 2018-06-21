@@ -1,6 +1,5 @@
 <% include ../partials/header %>
 <link rel="stylesheet" href="posts/index.css">
-<link rel="stylesheet" href="posts/index_2.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 <% if (login) { %>
     <% var firstName = user.firstName %>
@@ -15,7 +14,7 @@
     <% posts.reverse().forEach(post => { %>
         <article class="post">
             <div class="post__header">
-                <img class="avatar" src="http://via.placeholder.com/50x50">
+                <img src="<%=post.creator.profile%>" class="avatar" style="width: auto; height: auto; max-width: 50px; max-height: 50px;">
                 <div class="post__info">
                 <a href="/user/<%= post.creator._id %>/profile"><%= post.creator.firstName + " " + post.creator.lastName %></a>
                 <span><a href="/post/<%= post._id %>">Created: <%= post.time.getDate() + "." + post.time.getMonth() + "." + post.time.getFullYear() + " - " + post.time.getHours() + ":" + post.time.getMinutes() %></a></span>

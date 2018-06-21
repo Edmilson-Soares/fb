@@ -6,6 +6,7 @@ let UserSchema = new mongoose.Schema({
     firstName: String,
     lastName: String,
     password: String,
+    profile: String,
     posts: [
         {
             type: mongoose.Schema.Types.ObjectId,

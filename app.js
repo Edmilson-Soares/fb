@@ -5,11 +5,14 @@ const expressSession = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const socket = require("socket.io");
+const dotenv = require("dotenv");
 const flash = require("connect-flash");
 const Post = require("./models/Post");
 const User = require("./models/User");
 const port = process.env.port || 3000;
 const onlineChatUsers = [];
+
+dotenv.config();
 
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");

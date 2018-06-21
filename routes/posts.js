@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 });
 
 const imageFilter = (req, file, callback) => {
-    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/i)) {
         return callback(new Error("Only image files are allowed!"), false);
     }
     callback(null, true);
@@ -24,9 +24,9 @@ const upload = multer({ storage: storage, fileFilter: imageFilter });
 
 // Cloudinary setup
 cloudinary.config({
-    cloud_name: "idanlo",
-    api_key: "684776635339213",
-    api_secret: "zsvfzGd1EA8zK4CfPAsrMrJxDW4"
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 // Middleware
 const isLoggedIn = (req, res, next) => {
@@ -145,15 +145,7 @@ router.post("/post/new", isLoggedIn, upload.single("image"), (req, res) => {
                 newPost.time = new Date();
                 newPost.likes = 0;
                 newPost.content = req.body.content;
-                Post.create(newPost, (err, post) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        req.user.posts.push(post._id);
-                        req.user.save();
-                        res.redirect("/");
-                    }
-                });
+                return createPost(newPost, req, res);
             });
         } else {
             newPost.image = null;
@@ -161,18 +153,23 @@ router.post("/post/new", isLoggedIn, upload.single("image"), (req, res) => {
             newPost.time = new Date();
             newPost.likes = 0;
             newPost.content = req.body.content;
-            Post.create(newPost, (err, post) => {
-                if (err) {
-                    console.log(err);
-                } else {
-                    req.user.posts.push(post._id);
-                    req.user.save();
-                    res.redirect("/");
-                }
-            });
+            return createPost(newPost, req, res);
         }
     }
 });
+
+// helper function for the /post/new POST route
+function createPost(newPost, req, res) {
+    Post.create(newPost, (err, post) => {
+        if (err) {
+            console.log(err);
+        } else {
+            req.user.posts.push(post._id);
+            req.user.save();
+            res.redirect("/");
+        }
+    });
+}
 
 router.get("/post/:id", isLoggedIn, (req, res) => {
     Post.findById(req.params.id)

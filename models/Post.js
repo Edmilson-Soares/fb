@@ -11,7 +11,8 @@ let PostSchema = new mongoose.Schema({
             ref: "User"
         },
         firstName: String,
-        lastName: String
+        lastName: String,
+        profile: String
     },
     comments: [
         {
