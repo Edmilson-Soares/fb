@@ -124,6 +124,7 @@ router.get("/user/:id/profile", isLoggedIn, (req, res) => {
     User.findById(req.params.id)
         .populate("friends")
         .populate("friendRequests")
+        .populate("posts")
         .exec((err, user) => {
             if (err) {
                 console.log(err);
@@ -131,6 +132,7 @@ router.get("/user/:id/profile", isLoggedIn, (req, res) => {
                 res.redirect("back");
             } else {
                 // render the page without the friends array.
+                console.log(user);
                 res.render("users/user", { userData: user }); // im calling it userData because i have a local template variable called user and i don't want to over-write it
             }
         });
