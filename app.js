@@ -44,7 +44,10 @@ app.use(express.static("public"));
 app.use(flash());
 
 // Connect to MongoDB database
-mongoose.connect("mongodb://localhost/facebook_clone");
+// mongoose.connect("mongodb://localhost/facebook_clone");
+mongoose.connect(
+    "mongodb://idanlo:7878idanlo@ds161710.mlab.com:61710/facebook_clone"
+);
 
 // Passing variables to template files
 app.use((req, res, next) => {
@@ -82,14 +85,19 @@ room.on("connection", socket => {
     });
 
     socket.on("disconnect", () => {
-        console.log("NAME DISCONNECT: " + socket.name);
         delete onlineChatUsers[socket.name];
         room.emit("updateUserList", Object.keys(onlineChatUsers));
-        console.log(`user ${socket.id} disconnected`);
+        console.log(`user ${socket.name} disconnected`);
     });
 
     socket.on("chat", data => {
-        console.log(`User ${data.name} sent a message: ${data.message}`);
-        room.emit("chat", data);
+        console.log(data);
+        if (data.to === "Global Chat") {
+            room.emit("chat", data);
+        } else if (data.to) {
+            room.to(onlineChatUsers[data.name]).emit("chat", data);
+            room.to(onlineChatUsers[data.to]).emit("chat", data);
+        }
+        // console.log(`User ${data.name} sent a message: ${data.message}`);
     });
 });

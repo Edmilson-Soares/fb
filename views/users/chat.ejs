@@ -66,7 +66,7 @@
         <% // } %>
     </div>
     <div id="chat-window" class="chat-window">
-        <h3 class="user-heading">Global Chat</h3>
+        <h3 id="chat_header" class="user-heading">Global Chat</h3>
         <div id="output" class="output">
 
         </div>
@@ -86,7 +86,7 @@
 <script>
     // const socket = io.connect("http://localhost:3000");
     const socket = io("/chat");
-    const name = "<%= firstName %>";
+    const username = "<%= firstName %>";
 
     const message = document.getElementById("message");
     const button = document.getElementById("send");
@@ -94,39 +94,61 @@
     const users = document.getElementById("users");
     const chat = document.getElementById("chat-window");
     const form = document.getElementById("send-message");
+    const chat_header = document.getElementById("chat_header");
+
+    const sendTo = "";
 
     form.addEventListener("submit", (e) => {
         e.preventDefault();
         if(message.value) {
             socket.emit("chat", {
                 message: message.value,
-                name: name
+                name: username,
+                to: chat_header.innerHTML
             })
             message.value = "";
         }
     })
 
     socket.on("chat", data => {
-        output.innerHTML += `<p><strong>${data.name}</strong> - ${data.message}</p>`
+        console.log(data)
+        if (data.to === "Global Chat") {
+            if (data.name === username) {
+                output.innerHTML += `<p><strong>You</strong> - ${data.message}</p>`
+            } else {
+                output.innerHTML += `<p><strong>${data.name}</strong> - ${data.message}</p>`
+            }
+        } else if (data.to) {
+            if (data.name === username) {
+                output.innerHTML += `<p>Private message from <strong>you</strong> to <strong>${data.to}</strong> - ${data.message}</p>`
+            } else {
+                output.innerHTML += `<p>Private message from <strong>${data.name}</strong> - ${data.message}</p>`
+            }
+        }
         chat.scrollTop = chat.scrollHeight;
     })
 
     socket.on("newUser", data => {
-        socket.emit("newUser", { name: name, socketID: data.socketID })
+        socket.emit("newUser", { name: username, socketID: data.socketID })
     })
 
     socket.on("updateUserList", data => {
         console.log(data)
-        let string = ``;
+        let string = `<li class="list-group-item"><button style="border: none; background: none; cursor: pointer; outline: none" onclick='setUser("Global Chat")'>Global Chat</button></li>`;
         for(var i = 0; i < data.length; i++) {
-            string += `<li class="list-group-item">${data[i]}</li>`;
+            if (data[i] !== username) {
+                string += `<li class="list-group-item"><button style="border: none; background: none; cursor: pointer; outline: none;" onclick='setUser(${JSON.stringify(data[i])})'>${data[i]}</button></li>`;
+            }
         }
         users.innerHTML = string;
     })
 
-    socket.on("userDisconnected", data => {
-        console.log("disconnected user")
-    })
+    function setUser(name) {
+        if (username !== name) {
+            chat_header.innerHTML = name;
+            // output.innerHTML = "";
+        }
+    }
 </script>
 
 <% include ../partials/footer %>
