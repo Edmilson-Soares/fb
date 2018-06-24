@@ -9,7 +9,7 @@ const dotenv = require("dotenv");
 const flash = require("connect-flash");
 const Post = require("./models/Post");
 const User = require("./models/User");
-const port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 const onlineChatUsers = {};
 
 dotenv.config();
