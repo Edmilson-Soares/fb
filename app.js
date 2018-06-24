@@ -10,7 +10,7 @@ const flash = require("connect-flash");
 const Post = require("./models/Post");
 const User = require("./models/User");
 const port = process.env.port || 3000;
-const onlineChatUsers = [];
+const onlineChatUsers = {};
 
 dotenv.config();
 
@@ -68,32 +68,28 @@ const io = socket(server);
 
 const room = io.of("/chat");
 room.on("connection", socket => {
-    console.log(socket);
     console.log("new user ", socket.id);
-    // onlineChatUsers.push({
-    //     _id: req.user._id,
 
-    // });
     room.emit("newUser", { socketID: socket.id });
 
     socket.on("newUser", data => {
-        if (!onlineChatUsers.find(o => o.name === data.name)) {
-            onlineChatUsers.push(data);
-            room.emit("updateUserList", onlineChatUsers);
-            console.log(onlineChatUsers);
+        if (!(data.name in onlineChatUsers)) {
+            onlineChatUsers[data.name] = data.socketID;
+            socket.name = data.name;
+            room.emit("updateUserList", Object.keys(onlineChatUsers));
+            console.log("Online users: " + Object.keys(onlineChatUsers));
         }
     });
 
     socket.on("disconnect", () => {
-        let dcUser = onlineChatUsers.find(o => o.socketID === socket.id);
-        let index = onlineChatUsers.indexOf(dcUser);
-        onlineChatUsers.splice(index, 1);
-        room.emit("updateUserList", onlineChatUsers);
+        console.log("NAME DISCONNECT: " + socket.name);
+        delete onlineChatUsers[socket.name];
+        room.emit("updateUserList", Object.keys(onlineChatUsers));
         console.log(`user ${socket.id} disconnected`);
     });
 
     socket.on("chat", data => {
-        console.log(data);
+        console.log(`User ${data.name} sent a message: ${data.message}`);
         room.emit("chat", data);
     });
 });
