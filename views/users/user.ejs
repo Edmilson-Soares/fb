@@ -1,5 +1,6 @@
 <% include ../partials/header %>
 <link rel="stylesheet" href="/users/user.css">
+<link rel="stylesheet" href="/posts/index.css">
 
 <!-- <h1><%= userData.firstName + " " + userData.lastName %></h1>
 
@@ -68,15 +69,12 @@
             <div class="mainBar">
                 <% userData.posts.forEach(post => { %>
                     <div class="post">
-                        <div class="profile">
-                            <div class="profile-image" style="background-image: url('<%= post.creator.profile %>')">
-                                <!-- <img src="<%= post.creator.profile %>"> -->
-                            </div>
-                            <div class="profile-name">
-                                <a href="/user/<%= post.creator._id %>/profile"><%= post.creator.firstName + " " + post.creator.lastName %></a>
-                                <br />
-                                <a href="/post/<%= post._id %>">Created: <%= post.time.getDate() + "." + post.time.getMonth() + "." + post.time.getFullYear() + " - " + post.time.getHours() + ":" + post.time.getMinutes() %></a>
-                            </div>
+                        <div class="post__header">
+                            <img src="<%=post.creator.profile%>" class="avatar" style="width: auto; height: auto; max-width: 50px; max-height: 50px;">
+                            <div class="post__info">
+                            <a href="/user/<%= post.creator._id %>/profile"><%= post.creator.firstName + " " + post.creator.lastName %></a>
+                            <span><a href="/post/<%= post._id %>">Created: <%= post.time.getDate() + "." + post.time.getMonth() + "." + post.time.getFullYear() + " - " + post.time.getHours() + ":" + post.time.getMinutes() %></a></span>
+                            </div>        
                         </div>
                         <div class="content">
                             <% if (post.image) { %>
@@ -84,7 +82,7 @@
                                     <img src="<%= post.image %>">
                                 </div>
                             <% } %>
-                            <% if(user.liked.find(o => o.equals(post._id))) { %>
+                            <% if(user.liked_posts.find(o => o.equals(post._id))) { %>
                                 <p><%= post.likes %> Likes</p>
                             <% } else { %>
                                 <a href="/post/<%= post._id %>/like">Like <%= post.likes %></a>

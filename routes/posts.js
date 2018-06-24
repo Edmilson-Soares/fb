@@ -86,25 +86,25 @@ router.get("/", isLoggedIn, (req, res) => {
 
 // user likes a post
 router.get("/post/:id/like", isLoggedIn, (req, res) => {
-    User.findById(req.user._id, (err, user) => {
-        if (err) {
-            console.log(err);
+    User.findById(req.user._id, (userErr, user) => {
+        if (userErr) {
+            console.log(userErr);
             req.flash(
                 "There has been an error trying to like this post, are you logged in?"
             );
             rse.redirect("back");
         } else {
-            Post.findById(req.params.id, (err, post) => {
-                if (err) {
-                    console.log(err);
+            Post.findById(req.params.id, (postErr, post) => {
+                if (postErr) {
+                    console.log(postErr);
                     req.flash(
                         "There has been an error trying to like this post, are you sure you are in the correct URL?"
                     );
                     res.redirect("back");
                 } else {
                     // check if user already likes this post
-                    for (let i = 0; i < user.liked.length; i++) {
-                        if (user.liked[i].equals(post._id)) {
+                    for (let i = 0; i < user.liked_posts.length; i++) {
+                        if (user.liked_posts[i].equals(post._id)) {
                             // req.flash with error saying he already liked this post
                             req.flash("error", "You already liked this post");
                             return res.redirect("back");
@@ -113,13 +113,50 @@ router.get("/post/:id/like", isLoggedIn, (req, res) => {
                     // increase the likes on the post and add it to user's array. req.flash with success
                     post.likes = post.likes + 1;
                     post.save();
-                    user.liked.push(post._id);
+                    user.liked_posts.push(post._id);
                     user.save();
                     req.flash(
                         "success",
                         `You successfully liked ${
                             post.creator.firstName
                         }'s post`
+                    );
+                    res.redirect("back");
+                }
+            });
+        }
+    });
+});
+
+// user likes a comment
+router.get("/post/:postid/comments/:commentid/like", isLoggedIn, (req, res) => {
+    User.findById(req.user._id, (userErr, user) => {
+        if (userErr) {
+            console.log(userErr);
+            req.flash(
+                "error",
+                "There has been an error trying to like this post"
+            );
+            res.redirect("back");
+        } else {
+            Comment.findById(req.params.commentid, (commentErr, comment) => {
+                if (commentErr) {
+                    console.log(commentErr);
+                    req.flash(
+                        "error",
+                        "There has been an error trying to find the comment, are you sure the URL is correct?"
+                    );
+                    res.redirect("back");
+                } else {
+                    comment.likes = comment.likes + 1;
+                    comment.save();
+                    user.liked_comments.push(comment._id);
+                    user.save();
+                    req.flash(
+                        "success",
+                        `You successfully liked ${
+                            comment.creator.firstName
+                        }'s comment`
                     );
                     res.redirect("back");
                 }
@@ -185,21 +222,6 @@ router.get("/post/:id", isLoggedIn, (req, res) => {
         });
 });
 
-router.get("/post/:id/comments/new", isLoggedIn, (req, res) => {
-    Post.findById(req.params.id, (err, post) => {
-        if (err) {
-            console.log(err);
-            req.flash(
-                "error",
-                "There has been an error trying to comment on this post"
-            );
-            res.redirect("back");
-        } else {
-            res.render("comments/new", { post: post });
-        }
-    });
-});
-
 router.post("/post/:id/comments/new", isLoggedIn, (req, res) => {
     Post.findById(req.params.id, (err, post) => {
         if (err) {
@@ -219,6 +241,7 @@ router.post("/post/:id/comments/new", isLoggedIn, (req, res) => {
                     comment.creator._id = req.user._id;
                     comment.creator.firstName = req.user.firstName;
                     comment.creator.lastName = req.user.lastName;
+                    comment.likes = 0;
                     comment.save();
                     post.comments.push(comment);
                     post.save();

@@ -14,7 +14,14 @@ let UserSchema = new mongoose.Schema({
         }
     ],
     // liked posts
-    liked: [
+    liked_posts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post"
+        }
+    ],
+    // liked comments
+    liked_comments: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Post"

@@ -1,5 +1,5 @@
 <% include ../partials/header %>
-<link rel="stylesheet" href="posts/index.css">
+<link rel="stylesheet" href="/posts/index.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
 <% if (login) { %>
     <% var firstName = user.firstName %>
@@ -26,7 +26,7 @@
                 </div>
             <% } %>
             <div class="post__engage">
-                <% if(user.liked.find(o => o.equals(post._id))) { %>
+                <% if(user.liked_posts.find(o => o.equals(post._id))) { %>
                     <p><%= post.likes %> Likes</p>
                 <% } else { %>
                     <a href="/post/<%= post._id %>/like">Like <%= post.likes %></a>
