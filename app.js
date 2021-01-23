@@ -46,7 +46,7 @@ app.use(flash());
 // Connect to MongoDB database
 // mongoose.connect("mongodb://localhost/facebook_clone");
 mongoose.connect(
-    "mongodb://idanlo:7878idanlo@ds161710.mlab.com:61710/facebook_clone"
+    "mongodb+srv://teste2:1OaAGGUveTSH1rEG@cluster0.cclvq.mongodb.net/www?retryWrites=true&w=majority"
 );
 
 // Passing variables to template files
